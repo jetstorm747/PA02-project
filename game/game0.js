@@ -200,7 +200,11 @@ function createLoseScene(){
 			npc.position.set(30,5,-30);
 			npc.addEventListener('collision',function(other_object){
 				if (other_object==avatar){
-					gameState.scene = 'youwon';
+					gameState.health -= 1;
+					npc.position.set(randN(20)+15,5,randN(20)+15);
+					npc.__dirtyPosition = true;
+
+
 				}
 			});
 			scene.add(npc);
