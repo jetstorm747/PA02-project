@@ -528,6 +528,8 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "s": controls.bwd = true; break;
 			case "a": controls.left = true; break;
 			case "d": controls.right = true; break;
+			case "g": controls.strafeRight= true; break;
+			case "l": controls.strafeLeft= true; break;
 			case "r": controls.up = true; break;
 			case "f": controls.down = true; break;
 			case "m": controls.speed = 30; break;
@@ -563,6 +565,8 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "s": controls.bwd   = false; break;
 			case "a": controls.left  = false; break;
 			case "d": controls.right = false; break;
+			case "g": controls.strafeRight= false; break;
+			case "l": controls.strafeLeft= false; break;
 			case "r": controls.up    = false; break;
 			case "f": controls.down  = false; break;
 			case "m": controls.speed = 10; break;
@@ -574,7 +578,11 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 	function updateNPC(){
 		npc.lookAt(avatar.position);
 	  //npc.__dirtyPosition = true;
-		npc.setLinearVelocity(npc.getWorldDirection().multiplyScalar(0.5));
+		var velocity = -0.5;
+		if (npc.position.distanceTo(avatar.position) < 20){
+			velocity = 0.5;
+		}
+		npc.setLinearVelocity(npc.getWorldDirection().multiplyScalar(velocity));
 	}
 
   function updateAvatar(){
@@ -586,6 +594,18 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			avatar.setLinearVelocity(forward.multiplyScalar(controls.speed));
 		} else if (controls.bwd){
 			avatar.setLinearVelocity(forward.multiplyScalar(-controls.speed));
+		} else if (controls.strafeLeft){
+      var axis = new THREE.Vector3( 0, 1, 0 );
+      var angle = Math.PI / 2;
+			var sideways = forward;
+      sideways.applyAxisAngle( axis, angle );
+			avatar.setLinearVelocity(sideways.multiplyScalar(controls.speed));
+		}else if (controls.strafeRight){
+	      var axis = new THREE.Vector3( 0, 1, 0 );
+	      var angle = Math.PI / 2;
+				var sideways = forward;
+	      sideways.applyAxisAngle( axis, angle );
+				avatar.setLinearVelocity(sideways.multiplyScalar(-controls.speed));
 		} else {
 			var velocity = avatar.getLinearVelocity();
 			velocity.x=velocity.z=0;
