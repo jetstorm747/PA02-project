@@ -17,7 +17,11 @@ The user moves a cube around the board trying to knock balls into a cone
 	var cone;
 	var npc;
 
-	var endScene, endCamera, endText, loseScene, loseCamera;
+
+	var endScene, endCamera, endText;
+	var startScene, startCamera;//Jacob
+	var loseScene, loseCamera;
+
 
 
 
@@ -406,7 +410,15 @@ function createLoseScene(){
 			gameState.score = 0;
 			addBalls();
 			return;
+
 		}
+if (gameState.scene == 'start' && ( event.key == 'p' || event.key == 'P')) {
+		gameState.scene = 'main';
+
+		}
+if (gameState.scene == 'main' && (event.key == 'r')) {
+ 			gameState.scene = 'main';
+ 			}
 
 
 
@@ -456,7 +468,7 @@ function createLoseScene(){
 			case "f": controls.down  = false; break;
 			case "m": controls.speed = 10; break;
             case " ": controls.fly = false; break;
-            case "r": controls.reset = false; break;
+
 		}
 	}
 
