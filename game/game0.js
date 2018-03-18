@@ -17,7 +17,6 @@ The user moves a cube around the board trying to knock balls into a cone
 	var cone;
 	var npc;
 
-
 	var endScene, endCamera, endText;
 	var startScene, startCamera;//Jacob
 	var loseScene, loseCamera;
@@ -33,7 +32,7 @@ The user moves a cube around the board trying to knock balls into a cone
 		    camera:camera}
 
 	var gameState =
-	     {score:0, health:0, scene:'main', camera:'none' }
+	     {score:0, health:10, scene:'main', camera:'none' }
 
 
 	// Here is the main game control
@@ -68,7 +67,80 @@ function createLoseScene(){
 		endCamera.position.set(0,50,1);
 		endCamera.lookAt(0,0,0);
 
+
+
 	}
+
+
+	function createStartScene(){
+		startScene = initScene();
+		initTextMesh();
+
+		startCamera = new THREE.PerspectiveCamera(  75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+		startCamera.position.set(0,0,15);
+		startCamera.lookAt(0,0,0);
+
+		gameState.scene = 'start';
+
+
+
+
+	}
+
+	function initTextMesh(){
+		var loader = new THREE.FontLoader();
+		loader.load( '/fonts/helvetiker_regular.typeface.json',
+								 createStartText);
+		console.log("preparing to load the font");
+
+	}
+
+//Jacob----------------------------------------------------------------------top
+	function createStartText(font) {
+		var textGeometry1 =
+			new THREE.TextGeometry ('PA02',
+			{
+				font: font,
+				size: 4,
+				height: 0,
+				curveSegments: 12,
+				bevelEnabled: false,
+				bevelThickness: 0.01,
+				bevelSize: 0.08,
+				bevelSegments: 5
+			}
+		);
+
+		var textGeometry2 =
+			new THREE.TextGeometry ('>PRESS P TO START<',
+			{
+				font: font,
+				size: 2,
+				height: 0,
+				curveSegments: 12,
+				bevelEnabled: false,
+				bevelThickness: 0.01,
+				bevelSize: 0.08,
+				bevelSegments: 5
+			}
+		);
+
+		var textMaterial1 = new THREE.MeshBasicMaterial ( {color: 'yellow'});
+		var textMesh1 = new THREE.Mesh( textGeometry1, textMaterial1);
+		textMesh1.position.set(-7,0,0);
+		startScene.add(textMesh1);
+
+
+		var textMaterial2 = new THREE.MeshBasicMaterial ( {color: 'yellow'});
+		var textMesh2 = new THREE.Mesh( textGeometry2, textMaterial2);
+		textMesh2.position.set(-14,-4,0);
+		startScene.add(textMesh2);
+
+		console.log("addted textMesh to scene");
+	}
+
+	//Jacob----------------------------------------------------------------bottom
+
 
 	/**
 	  To initialize the scene, we initialize each of its components
@@ -76,6 +148,8 @@ function createLoseScene(){
 	function init(){
       initPhysijs();
 			scene = initScene();
+
+			createStartScene();//Jacob
 			createEndScene();
 			createLoseScene();
 			initRenderer();
@@ -97,7 +171,6 @@ function createLoseScene(){
 			camera.lookAt(0,0,0);
 
 
-
 			// create the ground and the skybox
 			var ground = createGround('grass.png');
 			scene.add(ground);
@@ -113,8 +186,8 @@ function createLoseScene(){
 			scene.add(avatar);
 			gameState.camera = avatarCam;
 
-      		edgeCam = new THREE.PerspectiveCamera( 120, window.innerWidth / window.innerHeight, 0.1, 1000 );
-      		edgeCam.position.set(20,20,10);
+      edgeCam = new THREE.PerspectiveCamera( 120, window.innerWidth / window.innerHeight, 0.1, 1000 );
+      edgeCam.position.set(20,20,10);
 
 
 			addBalls();
@@ -137,6 +210,8 @@ function createLoseScene(){
             scene.add(wall);
 			//console.dir(npc);
 			//playGameMusic();
+
+
 
 	}
 
@@ -166,6 +241,14 @@ function createLoseScene(){
 						if (gameState.score==numBalls) {
 							gameState.scene='youwon';
 						}
+
+						//Jacob----------------------------------------------------------------------Top
+						//when the user gets a score of 5, a plow appears as a sort of powerup
+						if (gameState.score == 5) {
+							createPLow();
+						}
+						//Jacob-----------------------------------------------------------------------bottom
+
             //scene.remove(ball);  // this isn't working ...
 						// make the ball drop below the scene ..
 						// threejs doesn't let us remove it from the schene...
@@ -192,7 +275,7 @@ function createLoseScene(){
 
 		// load a sound and set it as the Audio object's buffer
 		var audioLoader = new THREE.AudioLoader();
-			audioLoader.load( '/sounds/loop.mp3', function( buffer ) {
+		audioLoader.load( '/sounds/loop.mp3', function( buffer ) {
 			sound.setBuffer( buffer );
 			sound.setLoop( true );
 			sound.setVolume( 0.05 );
@@ -372,15 +455,30 @@ function createLoseScene(){
 		var geometry = new THREE.SphereGeometry( 1, 16, 16);
 		var material = new THREE.MeshLambertMaterial( { color: 0xffff00} );
 		var pmaterial = new Physijs.createMaterial(material,0.9,0.95);
-        var mesh = new Physijs.BoxMesh( geometry, pmaterial );
+    var mesh = new Physijs.BoxMesh( geometry, pmaterial );
 		mesh.setDamping(0.1,0.1);
 		mesh.castShadow = true;
 		return mesh;
 	}
 
+	//Jacob------------------------------------------------------------------top
+	function createPLow(){
+		//this function creates a plow that the avatar can use to eaily push balls
+		//var geometry = new THREE.SphereGeometry( 4, 20, 20);
+		var geometry = new THREE.BoxGeometry( 15, 1, 4);
+		var material = new THREE.MeshLambertMaterial( { color: 'red'} );
+		var pmaterial = new Physijs.createMaterial(material,2,0);
+    var mesh = new Physijs.BoxMesh( geometry, pmaterial );
+		mesh.setDamping(0.1,0.1);
+		mesh.castShadow = true;
 
+		mesh.position.set(20,1,17)
+		scene.add(mesh);
+		console.log("added plow");
 
+	}
 
+//Jacob--------------------------------------------------------------------bottom
 
 	var clock;
 
@@ -429,7 +527,7 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "s": controls.bwd = true; break;
 			case "a": controls.left = true; break;
 			case "d": controls.right = true; break;
-			// case "r": controls.up = true; break;
+			case "r": controls.up = true; break;
 			case "f": controls.down = true; break;
 			case "m": controls.speed = 30; break;
 			//move cam view to left
@@ -444,7 +542,7 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			// switch cameras
 			case "1": gameState.camera = camera; break;
 			case "2": gameState.camera = avatarCam; break;
-      		case "3": gameState.camera = edgeCam; break;
+      case "3": gameState.camera = edgeCam; break;
 
 			// move the camera around, relative to the avatar
 			case "ArrowLeft": avatarCam.translateY(1);break;
@@ -464,18 +562,18 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "s": controls.bwd   = false; break;
 			case "a": controls.left  = false; break;
 			case "d": controls.right = false; break;
-			// case "r": controls.up    = false; break;
+			case "r": controls.up    = false; break;
 			case "f": controls.down  = false; break;
 			case "m": controls.speed = 10; break;
-            case " ": controls.fly = false; break;
-
+      case " ": controls.fly = false; break;
+      case "h": controls.reset = false; break;
 		}
 	}
 
 	function updateNPC(){
 		npc.lookAt(avatar.position);
 	  //npc.__dirtyPosition = true;
-		npc.setLinearVelocity(npc.getWorldDirection().multiplyScalar(-0.5));
+		npc.setLinearVelocity(npc.getWorldDirection().multiplyScalar(0.5));
 	}
 
   function updateAvatar(){
@@ -493,9 +591,9 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			avatar.setLinearVelocity(velocity); //stop the xz motion
 		}
 
-        if (controls.fly){
-            avatar.setLinearVelocity(new THREE.Vector3(0,controls.speed,0));
-        }
+    if (controls.fly){
+      avatar.setLinearVelocity(new THREE.Vector3(0,controls.speed,0));
+    }
 
 		if (controls.left){
 			avatar.setAngularVelocity(new THREE.Vector3(0,controls.speed*0.1,0));
@@ -503,12 +601,12 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			avatar.setAngularVelocity(new THREE.Vector3(0,-controls.speed*0.1,0));
 		}
 
-	  if (controls.reset){
-		  avatar.__dirtyPosition = true;
-		  avatar.position.set(40,10,40);
-	  }
+    if (controls.reset){
+      avatar.__dirtyPosition = true;
+      avatar.position.set(40,10,40);
+    }
 
-  }
+	}
 
 
 
@@ -518,6 +616,13 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 		if (gameState.health == 0) gameState.scene = 'youlose';
 		switch(gameState.scene) {
 
+			//Jacob--------------------------------------------------------------top
+			case "start":
+			renderer.render( startScene, startCamera);
+			//console.log("Rendering start screen");
+			break;
+			//Jacob--------------------------------------------------------------bottom
+
 			case "youwon":
 				//endText.rotateY(0.005);
 				renderer.render( endScene, endCamera );
@@ -526,8 +631,8 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "main":
 				updateAvatar();
 				updateNPC();
-        		edgeCam.lookAt(avatar.position);
-	    		scene.simulate();
+        edgeCam.lookAt(avatar.position);
+	    	scene.simulate();
 				if (gameState.camera!= 'none'){
 					renderer.render( scene, gameState.camera );
 				}
