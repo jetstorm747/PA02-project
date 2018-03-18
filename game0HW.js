@@ -17,11 +17,7 @@ The user moves a cube around the board trying to knock balls into a cone
 	var cone;
 	var npc;
 
-
 	var endScene, endCamera, endText;
-	var startScene, startCamera;//Jacob
-	var loseScene, loseCamera;
-
 
 
 
@@ -29,11 +25,11 @@ The user moves a cube around the board trying to knock balls into a cone
 
 	var controls =
 	     {fwd:false, bwd:false, left:false, right:false,
-				speed:10, fly:false, reset:false,
+				speed:10, fly:false, reset:false, strafeLeft:false, strafeRight: false,
 		    camera:camera}
 
 	var gameState =
-	     {score:0, health:0, scene:'main', camera:'none' }
+	     {score:0, health:10, scene:'main', camera:'none' }
 
 
 	// Here is the main game control
@@ -43,19 +39,7 @@ The user moves a cube around the board trying to knock balls into a cone
 
 
 
-function createLoseScene(){
-	loseScene = initScene();
-	loseText = createSkyBox('youlose.png',10);
-	//endText.rotateX(Math.PI);
-	loseScene.add(loseText);
-	var light1 = createPointLight();
-	light1.position.set(0,200,20);
-	loseScene.add(light1);
-	loseCamera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1000 );
-	loseCamera.position.set(0,50,1);
-	loseCamera.lookAt(0,0,0);
 
-}
 	function createEndScene(){
 		endScene = initScene();
 		endText = createSkyBox('youwon.png',10);
@@ -77,7 +61,6 @@ function createLoseScene(){
       initPhysijs();
 			scene = initScene();
 			createEndScene();
-			createLoseScene();
 			initRenderer();
 			createMainScene();
 	}
@@ -113,8 +96,8 @@ function createLoseScene(){
 			scene.add(avatar);
 			gameState.camera = avatarCam;
 
-      		edgeCam = new THREE.PerspectiveCamera( 120, window.innerWidth / window.innerHeight, 0.1, 1000 );
-      		edgeCam.position.set(20,20,10);
+      edgeCam = new THREE.PerspectiveCamera( 120, window.innerWidth / window.innerHeight, 0.1, 1000 );
+      edgeCam.position.set(20,20,10);
 
 
 			addBalls();
@@ -125,16 +108,16 @@ function createLoseScene(){
 
 			npc = createBoxMesh2(0x0000ff,1,2,4);
 			npc.position.set(30,5,-30);
-			npc.addEventListener('collision',function(other_object){
-				if (other_object==avatar){
-					gameState.scene = 'youwon';
-				}
-			});
+      npc.addEventListener('collision',function(other_object){
+        if (other_object==avatar){
+          gameState.scene = 'youwon';
+        }
+      })
 			scene.add(npc);
 
-            var wall = createWall(0xffaa00,50,3,1);
-            wall.position.set(10,0,10);
-            scene.add(wall);
+      var wall = createWall(0xffaa00,50,3,1);
+      wall.position.set(10,0,10);
+      scene.add(wall);
 			//console.dir(npc);
 			//playGameMusic();
 
@@ -192,7 +175,7 @@ function createLoseScene(){
 
 		// load a sound and set it as the Audio object's buffer
 		var audioLoader = new THREE.AudioLoader();
-			audioLoader.load( '/sounds/loop.mp3', function( buffer ) {
+		audioLoader.load( '/sounds/loop.mp3', function( buffer ) {
 			sound.setBuffer( buffer );
 			sound.setLoop( true );
 			sound.setVolume( 0.05 );
@@ -372,7 +355,7 @@ function createLoseScene(){
 		var geometry = new THREE.SphereGeometry( 1, 16, 16);
 		var material = new THREE.MeshLambertMaterial( { color: 0xffff00} );
 		var pmaterial = new Physijs.createMaterial(material,0.9,0.95);
-        var mesh = new Physijs.BoxMesh( geometry, pmaterial );
+    var mesh = new Physijs.BoxMesh( geometry, pmaterial );
 		mesh.setDamping(0.1,0.1);
 		mesh.castShadow = true;
 		return mesh;
@@ -405,22 +388,6 @@ function createLoseScene(){
 			addBalls();
 			return;
 		}
-		if (gameState.scene == 'youlose' && event.key=='r') {
-			gameState.scene = 'main';
-			gameState.score = 0;
-			addBalls();
-			return;
-
-		}
-if (gameState.scene == 'start' && ( event.key == 'p' || event.key == 'P')) {
-		gameState.scene = 'main';
-
-		}
-if (gameState.scene == 'main' && (event.key == 'r')) {
- 			gameState.scene = 'main';
- 			}
-
-
 
 		// this is the regular scene
 		switch (event.key){
@@ -429,22 +396,21 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "s": controls.bwd = true; break;
 			case "a": controls.left = true; break;
 			case "d": controls.right = true; break;
-			// case "r": controls.up = true; break;
+			case "g": controls.strafeRight= true; break;
+			case "l": controls.strafeLeft= true; break;
+			case "r": controls.up = true; break;
 			case "f": controls.down = true; break;
 			case "m": controls.speed = 30; break;
-			//move cam view to left
-			case "Q": avatarCam.translateX(-1);break;
-			case "E": avatarCam.translateX(1);break;
-      		case " ": controls.fly = true;
-          		console.log("space!!");
-          		break;
-      		case "h": controls.reset = true; break;
+      case " ": controls.fly = true;
+          console.log("space!!");
+          break;
+      case "h": controls.reset = true; break;
 
 
 			// switch cameras
 			case "1": gameState.camera = camera; break;
 			case "2": gameState.camera = avatarCam; break;
-      		case "3": gameState.camera = edgeCam; break;
+      case "3": gameState.camera = edgeCam; break;
 
 			// move the camera around, relative to the avatar
 			case "ArrowLeft": avatarCam.translateY(1);break;
@@ -464,18 +430,24 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "s": controls.bwd   = false; break;
 			case "a": controls.left  = false; break;
 			case "d": controls.right = false; break;
-			// case "r": controls.up    = false; break;
+			case "g": controls.strafeRight= false; break;
+			case "l": controls.strafeLeft= false; break;
+			case "r": controls.up    = false; break;
 			case "f": controls.down  = false; break;
 			case "m": controls.speed = 10; break;
-            case " ": controls.fly = false; break;
-
+      case " ": controls.fly = false; break;
+      case "h": controls.reset = false; break;
 		}
 	}
 
 	function updateNPC(){
 		npc.lookAt(avatar.position);
 	  //npc.__dirtyPosition = true;
-		npc.setLinearVelocity(npc.getWorldDirection().multiplyScalar(-0.5));
+		var velocity = -0.5;
+		if (npc.position.distanceTo(avatar.position) < 20){
+			velocity = 0.5;
+		}
+		npc.setLinearVelocity(npc.getWorldDirection().multiplyScalar(velocity));
 	}
 
   function updateAvatar(){
@@ -487,15 +459,27 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			avatar.setLinearVelocity(forward.multiplyScalar(controls.speed));
 		} else if (controls.bwd){
 			avatar.setLinearVelocity(forward.multiplyScalar(-controls.speed));
+		} else if (controls.strafeLeft){
+      var axis = new THREE.Vector3( 0, 1, 0 );
+      var angle = Math.PI / 2;
+			var sideways = forward;
+      sideways.applyAxisAngle( axis, angle );
+			avatar.setLinearVelocity(sideways.multiplyScalar(controls.speed));
+		}else if (controls.strafeRight){
+	      var axis = new THREE.Vector3( 0, 1, 0 );
+	      var angle = Math.PI / 2;
+				var sideways = forward;
+	      sideways.applyAxisAngle( axis, angle );
+				avatar.setLinearVelocity(sideways.multiplyScalar(-controls.speed));
 		} else {
 			var velocity = avatar.getLinearVelocity();
 			velocity.x=velocity.z=0;
 			avatar.setLinearVelocity(velocity); //stop the xz motion
 		}
 
-        if (controls.fly){
-            avatar.setLinearVelocity(new THREE.Vector3(0,controls.speed,0));
-        }
+    if (controls.fly){
+      avatar.setLinearVelocity(new THREE.Vector3(0,controls.speed,0));
+    }
 
 		if (controls.left){
 			avatar.setAngularVelocity(new THREE.Vector3(0,controls.speed*0.1,0));
@@ -503,19 +487,19 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			avatar.setAngularVelocity(new THREE.Vector3(0,-controls.speed*0.1,0));
 		}
 
-	  if (controls.reset){
-		  avatar.__dirtyPosition = true;
-		  avatar.position.set(40,10,40);
-	  }
+    if (controls.reset){
+      avatar.__dirtyPosition = true;
+      avatar.position.set(40,10,40);
+    }
 
-  }
+	}
 
 
 
 	function animate() {
 
 		requestAnimationFrame( animate );
-		if (gameState.health == 0) gameState.scene = 'youlose';
+
 		switch(gameState.scene) {
 
 			case "youwon":
@@ -526,15 +510,13 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "main":
 				updateAvatar();
 				updateNPC();
-        		edgeCam.lookAt(avatar.position);
-	    		scene.simulate();
+        edgeCam.lookAt(avatar.position);
+	    	scene.simulate();
 				if (gameState.camera!= 'none'){
 					renderer.render( scene, gameState.camera );
 				}
 				break;
-			case "youlose":
-				renderer.render( loseScene, loseCamera );
-				break;
+
 			default:
 			  console.log("don't know the scene "+gameState.scene);
 
