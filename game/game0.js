@@ -508,6 +508,12 @@ function createLoseScene(){
 			addBalls();
 			return;
 		}
+if (gameState.scene == 'start' && ( event.key == 'p' || event.key == 'P')) {
+		gameState.scene = 'main';
+		}
+if (gameState.scene == 'main' && (event.key == 'r')) {
+ 			gameState.scene = 'main';
+ 			}
 
 
 
