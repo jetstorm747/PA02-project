@@ -234,7 +234,8 @@ function createLoseScene(){
 
 			ball.addEventListener( 'collision',
 				function( other_object, relative_velocity, relative_rotation, contact_normal ) {
-					if (other_object==avatar){
+					if (other_object==cone){
+						gameState.health++;
 						console.log("ball "+i+" hit the cone");
 						soundEffect('good.wav');
 						gameState.score += 1;  // add one to the score
@@ -255,7 +256,7 @@ function createLoseScene(){
 						this.position.y = this.position.y - 100;
 						this.__dirtyPosition = true;
 					}
-          else if (other_object == cone){
+          else if (other_object == avatar){
             gameState.health ++;
           }
 				}
