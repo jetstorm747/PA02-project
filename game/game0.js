@@ -12,6 +12,8 @@ The user moves a cube around the board trying to knock balls into a cone
 	var scene, renderer;  // all threejs programs need these
 	var camera, avatarCam, edgeCam;  // we have two cameras in the main scene
 	var avatar;
+	var monkeyAvatar;
+	var brs;   //big red sphere
 	// here are some mesh objects ...
 
 	var cone;
@@ -214,6 +216,31 @@ function createLoseScene(){
             scene.add(wall);
 			//console.dir(npc);
 			//playGameMusic();
+			brs = createBouncyRedSphere();
+			brs.position.set(-40,40,40);
+			scene.add(brs);
+			console.log('just added brs');
+			console.dir(brs);
+
+			var platform = createRedBox();
+			platform.position.set(0,50,0);
+			platform.__dirtyPosition==true;
+			scene.add(platform);
+
+			initmonkeyAvatarJSON();
+			initmonkeyAvatarOBJ();
+
+
+	}
+
+	function createRedBox(){
+		var geometry = new THREE.BoxGeometry( 10, 2, 10);
+		var material = new THREE.MeshLambertMaterial( { color: 0xff0000} );
+		mesh = new Physijs.BoxMesh( geometry, material, 0);
+    //mesh = new Physijs.BoxMesh( geometry, material,0 );
+		mesh.castShadow = true;
+		return mesh;
+	}
 
 
 
@@ -417,27 +444,67 @@ function createLoseScene(){
 
 	}
 
-	function createAvatar(){
-		//var geometry = new THREE.SphereGeometry( 4, 20, 20);
-		var geometry = new THREE.BoxGeometry( 5, 5, 6);
-		var material = new THREE.MeshLambertMaterial( { color: 0xffff00} );
-		var pmaterial = new Physijs.createMaterial(material,0.9,0.5);
-		//var mesh = new THREE.Mesh( geometry, material );
-		var mesh = new Physijs.BoxMesh( geometry, pmaterial );
-		mesh.setDamping(0.1,0.1);
-		mesh.castShadow = true;
+var suzyOBJ;
+var theObj;
 
-		avatarCam.position.set(0,4,0);
-		avatarCam.lookAt(0,4,10);
-		mesh.add(avatarCam);
 
-  /*
-    var scoop1 = createBoxMesh2(0xff0000,10,1,0.1);
-		scoop1.position.set(0,-2,5);
-		mesh.add(scoop1);
-    */
+	function initmonkeyAvatarOBJ(){
+		var loader = new THREE.OBJLoader();
+		loader.load("../models/suzyA.obj",
+					function ( obj) {
+						console.log("loading obj file");
+						console.dir(obj);
+						//scene.add(obj);
+						obj.castShadow = true;
+						suzyOBJ = obj;
+						theOBJ = obj;
+						// you have to look inside the suzyOBJ
+						// which was imported and find the geometry and material
+						// so that you can pull them out and use them to create
+						// the Physics object ...
+						var geometry = suzyOBJ.children[0].geometry;
+						var material = suzyOBJ.children[0].material;
+						suzyOBJ = new Physijs.BoxMesh(geometry,material);
+						suzyOBJ.position.set(20,20,20);
+						scene.add(suzyOBJ);
+						console.log("just added suzyOBJ");
+						//suzyOBJ = new Physijs.BoxMesh(obj);
 
-		return mesh;
+						//
+					},
+					function(xhr){
+						console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );},
+
+					function(err){
+						console.log("error in loading: "+err);}
+				)
+	}
+
+	function initmonkeyAvatarJSON(){
+		var loader = new THREE.JSONLoader();
+		loader.load("../models/suzanne.json",
+					function ( geometry, materials ) {
+						console.log("loading monkeyAvatar");
+						var material = //materials[ 0 ];
+						new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
+						//geometry.scale.set(0.5,0.5,0.5);
+						monkeyAvatar = new Physijs.BoxMesh( geometry, material );
+
+						avatarCam = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
+						gameState.camera = avatarCam;
+
+						avatarCam.position.set(0,6,-15);
+						avatarCam.lookAt(0,4,10);
+						monkeyAvatar.add(avatarCam);
+						monkeyAvatar.position.set(-40,20,-40);
+						monkeyAvatar.castShadow = true;
+						scene.add( monkeyAvatar  );
+						avatar=monkeyAvatar;
+					},
+					function(xhr){
+						console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );},
+					function(err){console.log("error in loading: "+err);}
+				)
 	}
 
 
@@ -505,12 +572,10 @@ function createLoseScene(){
 		if (gameState.scene == 'youwon' && event.key=='r') {
 			gameState.scene = 'main';
 			gameState.score = 0;
-			addBalls();
-			return;
-		}
-		if (gameState.scene == 'youlose' && event.key=='r') {
-			gameState.scene = 'main';
-			gameState.score = 0;
+			// next reposition the big red sphere (brs)
+			brs.position.set(-40,40,40);
+			brs.__dirtyPosition = true;
+			brs.setLinearVelocity(0,1,0);
 			addBalls();
 			return;
 
@@ -633,6 +698,12 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 
 	}
 
+	function updateSuzyOBJ(){
+		var t = clock.getElapsedTime();
+		suzyOBJ.material.emissive.r = Math.abs(Math.sin(t));
+		suzyOBJ.material.color.b=0
+	}
+
 
 
 	function animate() {
@@ -656,6 +727,11 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "main":
 				updateAvatar();
 				updateNPC();
+				updateSuzyOBJ();
+				if (brs.position.y < 0){
+					// when the big red sphere (brs) falls off the platform, end the game
+					gameState.scene = 'youwon';
+				}
         edgeCam.lookAt(avatar.position);
 	    	scene.simulate();
 				if (gameState.camera!= 'none'){
