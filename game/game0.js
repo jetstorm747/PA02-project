@@ -628,7 +628,7 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "d": controls.right = true; break;
 			case "g": controls.strafeRight= true; break;
 			case "l": controls.strafeLeft= true; break;
-			case "r": controls.up = true; break;
+			// case "r": controls.up = true; break;
 			case "f": controls.down = true; break;
 			case "m": controls.speed = 30; break;
 
@@ -636,7 +636,7 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 				avatar.position.set(0,60,0);
 				avatar.__dirtyPosition = true;
 				console.dir(avatar);
-			break;
+				break;
 
 
       case " ": controls.fly = true;
@@ -657,7 +657,7 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "ArrowDown": avatarCam.translateZ(1);break;
 			case "q": controls.avatarCamAngle += Math.PI/8; break;
 			case "e": controls.avatarCamAngle -= Math.PI/8; break;
-			case "r": avatar.rotation.set(0,0,0); avatar.__dirtyRotation=true;
+			case "r": console.log("case r");avatar.rotation.set(0,0,0); avatar.__dirtyRotation=true;
 				console.dir(avatar.rotation); break;
 
 		}
