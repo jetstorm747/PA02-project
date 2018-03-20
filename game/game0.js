@@ -232,6 +232,28 @@ function createLoseScene(){
 
 
 	}
+function createAvatar(){
+	//var geometry = new THREE.SphereGeometry( 4, 20, 20);
+	var geometry = new THREE.BoxGeometry( 5, 5, 6);
+	var material = new THREE.MeshLambertMaterial( { color: 0xffff00} );
+	var pmaterial = new Physijs.createMaterial(material,0.9,0.5);
+	//var mesh = new THREE.Mesh( geometry, material );
+	var mesh = new Physijs.BoxMesh( geometry, pmaterial );
+	mesh.setDamping(0.1,0.1);
+	mesh.castShadow = true;
+
+	avatarCam.position.set(0,4,0);
+	avatarCam.lookAt(0,4,10);
+	mesh.add(avatarCam);
+
+	/*
+	  var scoop1 = createBoxMesh2(0xff0000,10,1,0.1);
+		  scoop1.position.set(0,-2,5);
+		  mesh.add(scoop1);
+	  */
+
+	return mesh;
+}
 
 	function createRedBox(){
 		var geometry = new THREE.BoxGeometry( 10, 2, 10);
@@ -242,10 +264,30 @@ function createLoseScene(){
 		return mesh;
 	}
 
+  function createBouncyRedSphere(){
+		//var geometry = new THREE.SphereGeometry( 4, 20, 20);
+		var geometry = new THREE.SphereGeometry( 5, 16, 16);
+		var material = new THREE.MeshLambertMaterial( { color: 0xff0000} );
+		var pmaterial = new Physijs.createMaterial(material,0.9,0.95);
+		var mass = 10;
+    var mesh = new Physijs.SphereMesh( geometry, pmaterial, mass );
+		mesh.setDamping(0.1,0.1);
+		mesh.castShadow = true;
 
+		mesh.addEventListener( 'collision',
+			function( other_object, relative_velocity, relative_rotation, contact_normal ) {
+				if (other_object==avatar){
+					console.log("avatar hit the big red ball");
+					soundEffect('bad.wav');
+					gameState.health = gameState.health - 1;
+
+				}
+			}
+		)
+
+		return mesh;
 
 	}
-
 
 	function randN(n){
 		return Math.random()*n;
@@ -302,7 +344,7 @@ function createLoseScene(){
 		var listener = new THREE.AudioListener();
 		camera.add( listener );
 
-		// create a global audio source
+		// create a global audio sourcet
 		var sound = new THREE.Audio( listener );
 
 		// load a sound and set it as the Audio object's buffer
@@ -482,7 +524,7 @@ var theObj;
 
 	function initmonkeyAvatarJSON(){
 		var loader = new THREE.JSONLoader();
-		loader.load("../models/suzanne.json",
+		loader.load("../models/MonkeyAvatar.json",
 					function ( geometry, materials ) {
 						console.log("loading monkeyAvatar");
 						var material = //materials[ 0 ];
