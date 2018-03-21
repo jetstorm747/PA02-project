@@ -23,12 +23,13 @@ The user moves a cube around the board trying to knock balls into a cone
 	var startScene, startCamera;//Jacob
 	var loseScene, loseCamera;
 
+	var deadBox, scoreText;
 
 
 
 
 
-	var controls =
+var controls =
 	     {fwd:false, bwd:false, left:false, right:false,
 				speed:10, fly:false, reset:false,
 		    camera:camera}
@@ -38,7 +39,7 @@ The user moves a cube around the board trying to knock balls into a cone
 
 
 	// Here is the main game control
-  init(); //
+    init(); //
 	initControls();
 	animate();  // start the animation loop!
 
@@ -229,13 +230,83 @@ function createLoseScene(){
 
 			var platform = createRedBox();
 			platform.position.set(0,50,0);
-			platform.__dirtyPosition==true;
+			platform.__dirtyPosition=true;
 			scene.add(platform);
 
+			deadBox = createDeadBox();
+			deadBox.position.set(-20, 5, 20);
+			deadBox.__directPosition = true;
+			scene.add(deadBox);
 
 
+
+
+			initScoreTextMesh();
+			// initScoreScoreTextMesh();
 
 	}
+
+function updateScoreText() {
+	scene.remove(scoreText);
+	initScoreTextMesh();
+}
+function initScoreTextMesh(){
+	var loader = new THREE.FontLoader();
+	loader.load( '/fonts/helvetiker_regular.typeface.json',
+		createScoreText);
+	console.log("preparing to load the font");
+
+}
+function createScoreText(font) {
+	var textGeometry1 =
+		new THREE.TextGeometry ('Score: ' + gameState.score,
+			{
+				font: font,
+				size: 4,
+				height: 0,
+				curveSegments: 12,
+				bevelEnabled: false,
+				bevelThickness: 0.01,
+				bevelSize: 0.08,
+				bevelSegments: 5
+			}
+		);
+	var textMaterial1 = new THREE.MeshBasicMaterial ( {color: 'yellow'});
+	scoreText = new THREE.Mesh( textGeometry1, textMaterial1);
+
+
+	scoreText.position.set(40, 20, 40);
+
+	scene.add(scoreText);
+
+}
+function createDeadBox(){
+	var geometry = new THREE.BoxGeometry( 5, 10, 2);
+
+	var texture = new THREE.TextureLoader().load( '../images/skull.jpg');
+	texture.wrapS = THREE.RepeatWrapping;
+	texture.wrapT = THREE.RepeatWrapping;
+
+	texture.repeat.set( 3,3);
+	var material = new THREE.MeshLambertMaterial( { color: 0xffffff,  map: texture ,side:THREE.DoubleSide} );
+
+
+
+	// var material = new THREE.MeshLambertMaterial( { color: 0x000000} );
+	var pmaterial = new Physijs.createMaterial(material,0.9,0.95);
+	mesh = new Physijs.BoxMesh( geometry, pmaterial, 0);
+	//mesh = new Physijs.BoxMesh( geometry, material,0 );
+	mesh.castShadow = true;
+	mesh.addEventListener( 'collision',
+		function( other_object, relative_velocity, relative_rotation, contact_normal ) {
+			if (other_object==avatar){
+				gameState.scene = 'youlose'
+
+			}
+		}
+	)
+	return mesh;
+}
 
 	function createRedBox(){
 		var geometry = new THREE.BoxGeometry( 10, 2, 10);
@@ -294,6 +365,7 @@ function createLoseScene(){
 						console.log("ball "+i+" hit the cone");
 						soundEffect('good.wav');
 						gameState.score += 1;  // add one to the score
+						updateScoreText();
 						if (gameState.score==numBalls) {
 							gameState.scene='youwon';
 						}
@@ -598,9 +670,12 @@ var theObj;
 		console.log("Keydown: '"+event.key+"'");
 		//console.dir(event);
 		// first we handle the "play again" key in the "youwon" scene
-		if (gameState.scene == 'youwon' && event.key=='r') {
+		if ((gameState.scene == 'youwon' && event.key=='r') ||
+			(gameState.scene == 'youlose' && event.key == 'r')) {
 			gameState.scene = 'main';
 			gameState.score = 0;
+			gameState.health = 10;
+			updateScoreText();
 			// next reposition the big red sphere (brs)
 			brs.position.set(-40,40,40);
 			brs.__dirtyPosition = true;
@@ -692,6 +767,11 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 		npc.setLinearVelocity(npc.getWorldDirection().multiplyScalar(velocity));
 	}
 
+	function updateScoreBox() {
+		scoreBox.lookAt(avatar.position);
+
+	}
+
   function updateAvatar(){
 		"change the avatar's linear or angular velocity based on controls state (set by WSAD key presses)"
 
@@ -766,12 +846,16 @@ function animate() {
 			case "main":
 				updateAvatar();
 				updateNPC();
+				// updateScoreBox();
+
 				updateSuzyOBJ();
 				if (brs.position.y < 0){
 					// when the big red sphere (brs) falls off the platform, end the game
 					gameState.scene = 'youwon';
 				}
-        edgeCam.lookAt(avatar.position);
+                edgeCam.lookAt(avatar.position);
+				// scoreScoreText.lookAt(avatar.position);
+				scoreText.lookAt(avatar.position);
 
 	    	scene.simulate();
 				if (gameState.camera!= 'none'){
