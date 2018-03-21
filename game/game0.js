@@ -731,8 +731,8 @@ if (gameState.scene == 'main' && (event.key == 'r')) {
 			case "ArrowRight": avatarCam.translateY(-1);break;
 			case "ArrowUp": avatarCam.translateZ(-1);break;
 			case "ArrowDown": avatarCam.translateZ(1);break;
-			case "q": controls.avatarCamAngle += Math.PI/8; break;
-			case "e": controls.avatarCamAngle -= Math.PI/8; break;
+			case "Q": console.log("qqqq");avatarCam.translateX(-1);break;
+			case "E": avatarCam.translateX(1);break;
 			case "r": console.log("case r");avatar.rotation.set(0,0,0); avatar.__dirtyRotation=true;
 				console.dir(avatar.rotation); break;
 
