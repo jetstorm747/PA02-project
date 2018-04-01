@@ -15,6 +15,7 @@ The user moves a cube around the board trying to knock balls into a cone
 	var monkeyAvatar;
 	var brs;   //big red sphere
 	// here are some mesh objects ...
+	var cycOBJ;
 
 	var cone;
 	var npc;
@@ -187,6 +188,7 @@ function createLoseScene(){
 
 			initmonkeyAvatarJSON();
 			initmonkeyAvatarOBJ();
+			initOBJmodel(cycOBJ);
 
 			avatarCam.position.set(0,4,0);
 			avatarCam.lookAt(0,4,10);
@@ -544,6 +546,38 @@ function createDeadBox(){
 var suzyOBJ;
 var theObj;
 
+
+	function initOBJmodel(newobj) {
+		var loader = new THREE.OBJLoader();
+		loader.load("../models/suzyA.obj",
+			function ( obj) {
+				console.log("loading obj file");
+				console.dir(obj);
+				//scene.add(obj);
+				obj.castShadow = true;
+				newobj = obj;
+
+				// you have to look inside the suzyOBJ
+				// which was imported and find the geometry and material
+				// so that you can pull them out and use them to create
+				// the Physics object ...
+				var geometry = newobj.children[0].geometry;
+				var material = newobj.children[0].material;
+				newobj = new Physijs.BoxMesh(geometry,material);
+				newobj.position.set(20,20,20);
+				scene.add(newobj);
+				console.log("just added suzyOBJ");
+				//suzyOBJ = new Physijs.BoxMesh(obj);
+
+				//
+			},
+			function(xhr){
+				console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );},
+
+			function(err){
+				console.log("error in loading: "+err);}
+		)
+	}
 
 	function initmonkeyAvatarOBJ(){
 		var loader = new THREE.OBJLoader();
